@@ -14,7 +14,7 @@ TARGETS = $(addsuffix $(SUFFIX), $(MAPPERS))
 
 MAIN = autogen
 EXE = $(MAIN)$(SUFFIX)
-NAME = learn-ocaml-autogen
+NAME = autogen
 BEXE = $(BDIR)/$(NAME)
 
 OCB_LIBS = -package compiler-libs.common -package cmdliner -package ezjsonm

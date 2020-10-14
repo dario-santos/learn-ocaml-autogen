@@ -24,6 +24,7 @@ let sed script output =
     try if script.[0] = '$' then "" else "-E"
     with Invalid_argument _ -> "-E" in
   let cmd = Printf.sprintf "sed -i.bak %s %s %s" e script output in
+  let _ = Printf.printf "%s\n" cmd in
   exec cmd (Printf.sprintf "Error while modifying %s." output)
 
 let remove_trailing_whitespaces = sed "'s/[ \t]+$//'"
@@ -54,6 +55,7 @@ let indent_meta_json meta_json =
     Printf.sprintf
     "awk '/\\[/{printf \"%%s\",$0;next} 1' %s | tee %s > /dev/null"
     meta_json meta_json in
+    Printf.printf "%s" stick_back_lists;
   exec stick_back_lists (Printf.sprintf "Error while modifying %s." meta_json);
   let indent = "'/^[^{}]/{s/^/  /;}'" in sed indent meta_json;
   Sys.remove (meta_json ^ ".bak")
@@ -63,9 +65,9 @@ let handle_generated_file exercise output template_fill file =
     (* HACK It seems that we can’t use command-line arguments and parsing of
      * the command-line doesn’t work, so we move meta.json manually. *)
     let ex_meta_json = mk_meta_json exercise in
-    Sys.rename "meta.json" ex_meta_json;
-    indent_meta_json ex_meta_json;
-    Sys.remove output;
+    Printf.printf "File ex_meta_json: %s.\n" ex_meta_json;
+    Parse_json.parse_json output ex_meta_json;
+    (*Sys.remove output;*)
     Printf.printf "File %s generated.\n" ex_meta_json
   ) else (
     handle_ml_file output template_fill file;
@@ -78,7 +80,7 @@ let generate_file exercise input template_fill file =
   let ocf =
     Printf.sprintf "ocamlfind ppx_tools/rewriter %s %s -o %s" mapper input
     output in
-  if (Sys.command ocf = 0) then
+  if (Sys.command ocf = 0) then 
     handle_generated_file exercise output template_fill file
   else
     Printf.eprintf "File %s could not be generated." output
